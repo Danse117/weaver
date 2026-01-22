@@ -21,16 +21,16 @@ export default function PublicLayout({
 			{children}
 			<Footer
 				logo={<WordmarkIcon className="h-4" />}
-				brandName="Weaver"
+				brandName=""
 				socialLinks={[
 					{
 						icon: <TwitterLogoIcon className="h-5 w-5" />,
-						href: '#',
+						href: 'https://x.com/aadiwrks',
 						label: 'X (Twitter)',
 					},
 					{
 						icon: <TikTokIcon />,
-						href: '#',
+						href: 'https://www.tiktok.com/@adi.works',
 						label: 'TikTok',
 					},
 					{

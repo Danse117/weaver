@@ -1,46 +1,10 @@
+import { comparisonData } from './data';
+
 interface ComparisonRow {
 	category: string;
 	manual: string;
 	withWeaver: string;
 }
-
-const comparisonData: ComparisonRow[] = [
-	{
-		category: 'Analytics Reporting',
-		manual:
-			'Manually logging into multiple platforms, downloading CSVs, copy-pasting into spreadsheets',
-		withWeaver:
-			'Unified dashboard with real-time analytics from all platforms in one place',
-	},
-	{
-		category: 'Content Performance',
-		manual:
-			'Tracking posts in spreadsheets, guessing what works, missing trends across platforms',
-		withWeaver:
-			'AI-powered insights that identify top performers and explain why content succeeds',
-	},
-	{
-		category: 'Multi-Platform Management',
-		manual:
-			'Switching between tabs and apps, scattered data, inconsistent metrics',
-		withWeaver:
-			'Single source of truth with normalized metrics across Instagram, TikTok, YouTube, and more',
-	},
-	{
-		category: 'Team Collaboration',
-		manual:
-			'Emailing screenshots, outdated reports, miscommunication about performance',
-		withWeaver:
-			'Shared workspaces with live data, automated reports, and insights everyone can access',
-	},
-	{
-		category: 'Audience Insights',
-		manual:
-			'Limited platform data, manual demographic analysis, guessing follower behavior',
-		withWeaver:
-			'Deep audience analytics with engagement patterns, growth trends, and actionable recommendations',
-	},
-];
 
 export function TeamsSection() {
 	return (
@@ -69,7 +33,7 @@ export function TeamsSection() {
 									</th>
 								</tr>
 							</thead>
-							<tbody className="divide-y">
+							<tbody className="divide-y bg-card dark:bg-card/50">
 								{comparisonData.map((row, index) => (
 									<tr
 										key={index}

@@ -1,16 +1,24 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { MenuToggleIcon } from '@/components/ui/menu-toggle-icon';
 import { RainbowButton } from '../CTAButton';
 import { useScroll } from '@/components/ui/use-scroll';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useTheme } from 'next-themes';
 
 export function Header() {
 	const [open, setOpen] = React.useState(false);
 	const scrolled = useScroll(10);
+	const { theme, resolvedTheme } = useTheme();
+	const [mounted, setMounted] = React.useState(false);
+
+	React.useEffect(() => {
+		setMounted(true);
+	}, []);
 
 	const links = [
 		{
@@ -60,13 +68,26 @@ export function Header() {
 		>
 			<nav
 				className={cn(
-					'flex h-14 w-full items-center justify-between px-4 md:h-12 md:transition-all md:ease-out',
+					'flex h-14 w-full items-center justify-between px-4 md:h-20 md:transition-all md:ease-out',
 					{
 						'md:px-2': scrolled,
 					},
 				)}
 			>
-				<WordmarkIcon className="h-4" />
+				<Link href="/" className="flex items-center">
+					{mounted ? (
+						<Image
+							src={resolvedTheme === 'dark' ? '/assets/logos/weaver_logo_dark.png' : '/assets/logos/weaver_logo_light.png'}
+							alt="Weaver"
+							width={200}
+							height={200}
+							className="h-10 w-auto"
+							priority
+						/>
+					) : (
+						<div className="h-10 w-[160px]" />
+					)}
+				</Link>
 				<div className="hidden items-center gap-2 md:flex">
 					{links.map((link, i) => (
 						<a key={i} className={buttonVariants({ variant: 'ghost' })} href={link.href}>
@@ -132,7 +153,25 @@ export function Header() {
 	);
 }
 
-export const WordmarkIcon = (props: React.ComponentProps<"svg">) => (
-  <svg viewBox="0 0 84 24" fill="currentColor" {...props}>
-  </svg>
-);
+export const WordmarkIcon = ({ className }: { className?: string }) => {
+	const { resolvedTheme } = useTheme();
+	const [mounted, setMounted] = React.useState(false);
+
+	React.useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	if (!mounted) {
+		return <div className={cn("h-4 w-[80px]", className)} />;
+	}
+
+	return (
+		<Image
+			src={resolvedTheme === 'dark' ? '/assets/logos/weaver_logo_dark.png' : '/assets/logos/weaver_logo_light.png'}
+			alt="Weaver"
+			width={80}
+			height={16}
+			className={cn("w-auto", className)}
+		/>
+	);
+};

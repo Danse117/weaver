@@ -13,5 +13,26 @@ export const createBreathingAnimation = (delay: number = 0) => ({
 	},
 });
 
+// Sidebar animations
+export const sidebarAnimations = {
+	slideIn: {
+		initial: { x: '-100%', opacity: 0 },
+		animate: { x: 0, opacity: 1 },
+		exit: { x: '-100%', opacity: 0 },
+		transition: {
+			duration: 0.3,
+			ease: 'easeInOut',
+		},
+	},
+	fadeIn: {
+		initial: { opacity: 0 },
+		animate: { opacity: 1 },
+		exit: { opacity: 0 },
+		transition: {
+			duration: 0.2,
+		},
+	},
+};
+
 // Component for animated radial gradient background
 export const AnimatedGradientBackground = motion.div;

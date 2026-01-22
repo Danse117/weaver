@@ -87,6 +87,28 @@ export const metadata: Metadata = {
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#000000" },
   ],
+  icons: {
+    icon: [
+      { url: "/assets/logos/weaver_icon.png", sizes: "any" },
+      { url: "/assets/logos/weaver_icon.png", sizes: "32x32", type: "image/png" },
+      { url: "/assets/logos/weaver_icon.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [
+      { url: "/assets/logos/weaver_icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      {
+        rel: "mask-icon",
+        url: "/assets/logos/weaver_icon.png",
+      },
+    ],
+  },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Weaver",
+  },
 };
 
 export default function RootLayout({
@@ -107,6 +129,10 @@ export default function RootLayout({
           url: "https://weavertek.com/assets/logos/weaver_logo_upscaled.png",
           width: 512,
           height: 512,
+        },
+        image: {
+          "@type": "ImageObject",
+          url: "https://weavertek.com/assets/logos/weaver_icon.png",
         },
         sameAs: [
           "https://x.com/aadiwrks",
@@ -133,6 +159,8 @@ export default function RootLayout({
         operatingSystem: "Web Browser",
         description:
           "Unified social media analytics platform that tracks performance across Instagram, TikTok, YouTube, Twitter, and more with actionable insights powered by official APIs.",
+        image: "https://weavertek.com/assets/logos/weaver_icon.png",
+        screenshot: "https://weavertek.com/assets/logos/weaver_icon.png",
         offers: {
           "@type": "Offer",
           price: "0",
