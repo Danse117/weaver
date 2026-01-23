@@ -1,9 +1,31 @@
+/**
+ * Server Actions: Connected Accounts Management
+ * 
+ * These server-side functions handle CRUD operations for connected social media accounts.
+ * All functions enforce Row Level Security (RLS) - users can only access their own accounts.
+ * 
+ * Features:
+ * - Fetch user's connected accounts
+ * - Get account by ID with automatic token refresh
+ * - Delete/disconnect accounts
+ * - Cache and retrieve account metrics
+ * 
+ * Security:
+ * - All functions run server-side only
+ * - Authenticated user required (checked via Supabase RLS)
+ * - Access tokens never exposed to client
+ */
+
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
 import { refreshAccessToken } from "@/lib/connectors/tiktok/oauth";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Connected account data structure
+ * Matches the connected_accounts table schema in Supabase
+ */
 export interface ConnectedAccount {
 	id: string;
 	user_id: string;
@@ -19,7 +41,13 @@ export interface ConnectedAccount {
 }
 
 /**
- * Get all connected accounts for the current user
+ * Get all connected accounts for the authenticated user
+ * 
+ * Returns accounts ordered by creation date (newest first).
+ * Does NOT include sensitive fields like access_token or refresh_token.
+ * 
+ * @returns Array of connected account objects
+ * @throws Error if user is not authenticated or database query fails
  */
 export async function getConnectedAccounts(): Promise<ConnectedAccount[]> {
 	const supabase = await createClient();
@@ -48,7 +76,23 @@ export async function getConnectedAccounts(): Promise<ConnectedAccount[]> {
 }
 
 /**
- * Get a single account by ID (with token refresh if needed)
+ * Get a specific connected account by ID with automatic token refresh
+ * 
+ * This function:
+ * 1. Fetches the account (with sensitive tokens)
+ * 2. Checks if access token is expired
+ * 3. Automatically refreshes token if needed (for TikTok)
+ * 4. Updates database with new tokens
+ * 5. Returns fresh account data
+ * 
+ * Token refresh logic:
+ * - TikTok tokens expire after 24 hours
+ * - Refresh happens automatically if token expires within 5 minutes
+ * - New tokens are saved to database
+ * 
+ * @param accountId - UUID of the connected account
+ * @returns Account object with valid access token, or null if not found
+ * @throws Error if refresh fails or database update fails
  */
 export async function getAccountById(
 	accountId: string
@@ -125,7 +169,17 @@ export async function getAccountById(
 }
 
 /**
- * Delete a connected account
+ * Delete (disconnect) a connected account
+ * 
+ * Removes the account from the database. This will:
+ * - Delete the account record
+ * - Cascade delete all associated metrics (via foreign key)
+ * - RLS ensures user can only delete their own accounts
+ * 
+ * Best practice: Call revokeToken() before this to invalidate the access token with TikTok.
+ * 
+ * @param accountId - UUID of the account to delete
+ * @throws Error if user doesn't own the account or deletion fails
  */
 export async function deleteAccount(accountId: string): Promise<void> {
 	const supabase = await createClient();
@@ -152,7 +206,17 @@ export async function deleteAccount(accountId: string): Promise<void> {
 }
 
 /**
- * Get cached metrics for an account
+ * Retrieve cached metrics for an account
+ * 
+ * Fetches the most recent cached metrics of a specific type,
+ * but only if they're fresh enough (within 1 hour).
+ * 
+ * Use this to avoid unnecessary API calls. If cache is stale or missing,
+ * fetch fresh data from the platform API and cache it.
+ * 
+ * @param accountId - UUID of the connected account
+ * @param metricType - Type of metric to retrieve
+ * @returns Cached metric data, or null if not found or stale
  */
 export async function getCachedMetrics(
 	accountId: string,
@@ -186,7 +250,23 @@ export async function getCachedMetrics(
 }
 
 /**
- * Cache metrics for an account
+ * Cache metrics data for an account
+ * 
+ * Stores API response data in account_metrics table for:
+ * - Reducing API calls (respect rate limits)
+ * - Historical tracking
+ * - Offline access
+ * - Performance (faster dashboard loads)
+ * 
+ * Metric types:
+ * - "profile_stats": Follower/following/likes/video counts
+ * - "video_performance": Individual video metrics
+ * - "audience_demographics": Future: age, gender, location data
+ * - "engagement_trends": Future: engagement over time
+ * 
+ * @param accountId - UUID of the connected account
+ * @param metricType - Type of metric being cached
+ * @param data - Metric data (stored as JSONB)
  */
 export async function cacheMetrics(
 	accountId: string,

@@ -1,4 +1,7 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/animations/animations';
 
 // Icon components
 const ChatGPTIcon = () => (
@@ -19,56 +22,65 @@ const PerplexityIcon = () => (
 	</svg>
 );
 
+const aiPlatforms = [
+	{
+		name: 'ChatGPT',
+		icon: <ChatGPTIcon />,
+		getUrl: (q: string) => `https://chat.openai.com/?q=${encodeURIComponent(q)}`,
+	},
+	{
+		name: 'Claude',
+		icon: <ClaudeIcon />,
+		getUrl: (q: string) => `https://claude.ai/new?q=${encodeURIComponent(q)}`,
+	},
+	{
+		name: 'Perplexity',
+		icon: <PerplexityIcon />,
+		getUrl: (q: string) => `https://www.perplexity.ai/?q=${encodeURIComponent(q)}`,
+	},
+];
+
 export function UnsureSection() {
 	const productName = 'Weaver';
 	const question = `Tell me why ${productName} social media analytics platform is a great choice for me`;
 
-	const aiPlatforms = [
-		{
-			name: 'ChatGPT',
-			icon: <ChatGPTIcon />,
-			url: `https://chat.openai.com/?q=${encodeURIComponent(question)}`,
-		},
-		{
-			name: 'Claude',
-			icon: <ClaudeIcon />,
-			url: `https://claude.ai/new?q=${encodeURIComponent(question)}`,
-		},
-		{
-			name: 'Perplexity',
-			icon: <PerplexityIcon />,
-			url: `https://www.perplexity.ai/?q=${encodeURIComponent(question)}`,
-		},
-	];
-
 	return (
 		<section className="py-16 lg:py-24">
 			<div className="mx-auto max-w-3xl px-6 text-center">
-				<h2 className="text-3xl font-semibold md:text-4xl lg:text-5xl">
-					Still not sure that{' '}
-					<span className="text-primary">{productName}</span> is right for you?
-				</h2>
-				<p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-					Let ChatGPT, Claude, or Perplexity do the thinking for you. Click a
-					button and see what your favourite AI says about {productName}
-				</p>
+				<FadeIn direction="up">
+					<h2 className="text-3xl font-semibold md:text-4xl lg:text-5xl">
+						Still not sure that{' '}
+						<span className="text-primary">{productName}</span> is right for you?
+					</h2>
+				</FadeIn>
+				<FadeIn direction="up" delay={0.15}>
+					<p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+						Let ChatGPT, Claude, or Perplexity do the thinking for you. Click a
+						button and see what your favourite AI says about {productName}
+					</p>
+				</FadeIn>
 
-				<div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-					{aiPlatforms.map((platform) => (
-						<Button
-							key={platform.name}
-							variant="outline"
-							size="lg"
-							asChild
-							className="gap-2"
-						>
-							<a href={platform.url} target="_blank" rel="noopener noreferrer">
-								{platform.icon}
-								<span>Ask {platform.name}</span>
-							</a>
-						</Button>
+				<StaggerContainer 
+					className="mt-8 flex flex-wrap items-center justify-center gap-4"
+					staggerDelay={0.1}
+					delayChildren={0.3}
+				>
+					{aiPlatforms.map((platform, index) => (
+						<StaggerItem key={platform.name} index={index} direction="up">
+							<Button
+								variant="outline"
+								size="lg"
+								asChild
+								className="gap-2"
+							>
+								<a href={platform.getUrl(question)} target="_blank" rel="noopener noreferrer">
+									{platform.icon}
+									<span>Ask {platform.name}</span>
+								</a>
+							</Button>
+						</StaggerItem>
 					))}
-				</div>
+				</StaggerContainer>
 			</div>
 		</section>
 	);

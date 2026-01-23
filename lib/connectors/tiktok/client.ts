@@ -1,3 +1,16 @@
+/**
+ * TikTok API v2 Client
+ * 
+ * This module provides functions to interact with TikTok's official API v2.
+ * All functions require a valid access token obtained through OAuth.
+ * 
+ * Rate Limits:
+ * - 600 requests per minute per access token
+ * - Rate limiting is tracked in-memory (use Redis for multi-server deployments)
+ * 
+ * @see https://developers.tiktok.com/doc/content-posting-api-reference
+ */
+
 import {
 	TikTokUserInfoResponse,
 	TikTokVideoListResponse,
@@ -8,15 +21,26 @@ import {
 
 const TIKTOK_API_BASE = "https://open.tiktokapis.com/v2";
 
-// Rate limiting tracker (simple in-memory, consider Redis for production)
+/**
+ * In-memory rate limit tracker
+ * Maps access token -> { request count, reset timestamp }
+ * 
+ * NOTE: For production with multiple servers, use Redis or similar
+ * to share rate limit state across instances.
+ */
 const rateLimitTracker = new Map<
 	string,
 	{ count: number; resetAt: number }
 >();
 
 /**
- * Check and update rate limit
- * TikTok allows 600 requests per minute per token
+ * Check and enforce rate limiting for TikTok API requests
+ * 
+ * TikTok's rate limit: 600 requests per minute per access token
+ * Counter resets every 60 seconds.
+ * 
+ * @param accessToken - The access token to check rate limit for
+ * @returns true if request is allowed, false if rate limit exceeded
  */
 function checkRateLimit(accessToken: string): boolean {
 	const now = Date.now();
@@ -41,6 +65,18 @@ function checkRateLimit(accessToken: string): boolean {
 
 /**
  * Make authenticated request to TikTok API
+ * 
+ * Handles:
+ * - Rate limiting (600 requests/minute)
+ * - Authentication (Bearer token)
+ * - Error handling and parsing
+ * - API-level error detection
+ * 
+ * @param endpoint - API endpoint path (e.g., "/user/info/")
+ * @param accessToken - Valid TikTok access token
+ * @param options - Additional fetch options (method, body, headers)
+ * @returns Parsed JSON response
+ * @throws Error if rate limited, unauthorized, or API returns error
  */
 async function tiktokFetch<T>(
 	endpoint: string,
@@ -79,8 +115,20 @@ async function tiktokFetch<T>(
 }
 
 /**
- * Get user information
- * Requires scopes: user.info.basic, user.info.profile, user.info.stats
+ * Get TikTok user profile information and statistics
+ * 
+ * Fetches comprehensive user data including profile info and account metrics.
+ * This is the primary endpoint for dashboard profile stats.
+ * 
+ * Required OAuth scopes:
+ * - user.info.basic: open_id, union_id
+ * - user.info.profile: username, display_name, avatar_url, bio, verification status
+ * - user.info.stats: follower_count, following_count, likes_count, video_count
+ * 
+ * @param accessToken - Valid TikTok access token
+ * @param fields - Array of field names to retrieve (defaults to all available)
+ * @returns User object with profile data and stats
+ * @throws Error if token is invalid or scopes are insufficient
  */
 export async function getUserInfo(
 	accessToken: string,
@@ -114,8 +162,23 @@ export async function getUserInfo(
 }
 
 /**
- * List user's videos
- * Requires scope: video.list
+ * List user's videos with pagination
+ * 
+ * Retrieves a paginated list of the user's TikTok videos, ordered by creation time (newest first).
+ * Use the returned cursor to fetch the next page.
+ * 
+ * Required OAuth scope: video.list
+ * 
+ * API Limits:
+ * - Max 20 videos per request
+ * - Videos include engagement metrics (views, likes, comments, shares)
+ * 
+ * @param accessToken - Valid TikTok access token
+ * @param cursor - Pagination cursor from previous response (omit for first page)
+ * @param maxCount - Number of videos to retrieve (1-20, default 20)
+ * @param fields - Array of video field names to retrieve
+ * @returns Object with videos array, next cursor, and hasMore flag
+ * @throws Error if token is invalid or scope is missing
  */
 export async function listVideos(
 	accessToken: string,
@@ -170,8 +233,22 @@ export async function listVideos(
 }
 
 /**
- * Query specific videos by ID
- * Requires scope: video.list
+ * Query specific videos by their IDs
+ * 
+ * Fetch detailed information for specific videos when you know their IDs.
+ * Useful for refreshing stats on specific videos or deep-linking to video details.
+ * 
+ * Required OAuth scope: video.list
+ * 
+ * API Limits:
+ * - Maximum 20 video IDs per request
+ * - Returns only videos that belong to the authenticated user
+ * 
+ * @param accessToken - Valid TikTok access token
+ * @param videoIds - Array of video IDs to query (max 20)
+ * @param fields - Array of video field names to retrieve
+ * @returns Array of video objects (may be less than requested if some IDs are invalid)
+ * @throws Error if more than 20 IDs provided or token is invalid
  */
 export async function queryVideos(
 	accessToken: string,
@@ -221,8 +298,15 @@ export async function queryVideos(
 }
 
 /**
- * Get aggregated stats for an account
- * This is a helper that combines getUserInfo for stats
+ * Get aggregated account statistics
+ * 
+ * Helper function that fetches just the key metrics for dashboard display.
+ * This is more efficient than fetching full user info when you only need stats.
+ * 
+ * Required OAuth scopes: user.info.basic, user.info.stats
+ * 
+ * @param accessToken - Valid TikTok access token
+ * @returns Object with followers, following, likes, and video counts
  */
 export async function getAccountStats(accessToken: string) {
 	const user = await getUserInfo(accessToken, [

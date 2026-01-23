@@ -1,20 +1,48 @@
+/**
+ * Dashboard Page Component
+ * 
+ * Main dashboard interface for managing connected social media accounts and viewing analytics.
+ * 
+ * Features:
+ * - Single-page app experience (no full page reloads when switching tabs/accounts)
+ * - URL persistence using query parameters (?tab=metrics&account=xyz)
+ * - Sidebar for account switching and adding new accounts
+ * - Tab navigation (Metrics, Content, Insights)
+ * - Empty state for new users with no connected accounts
+ * - Account removal functionality
+ * 
+ * URL Parameters:
+ * - tab: Active tab (metrics, content, insights) - defaults to metrics
+ * - account: Selected account ID - defaults to first account
+ * 
+ * State Management:
+ * - Connected accounts fetched on mount
+ * - Selected account and active tab synced with URL
+ * - Toast notifications for user feedback
+ */
+
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { getConnectedAccounts, ConnectedAccount } from "@/app/actions/accounts";
+import { getConnectedAccounts, ConnectedAccount, deleteAccount } from "@/app/actions/accounts";
 import { DashboardLayout } from "../components/dashboard/DashboardLayout";
-import { AccountSwitcher } from "../components/dashboard/AccountSwitcher";
+import Sidebar from "@/components/sidebar/Sidebar";
+import { ProfileCard } from "../components/dashboard/ProfileCard";
 import { TabBar, TabType } from "../components/dashboard/TabBar";
-import { EmptyState } from "../components/dashboard/EmptyState";
 import { AddAccountModal } from "../components/dashboard/AddAccountModal";
+import { SettingsModal } from "../components/dashboard/SettingsModal";
 import { MetricsTab } from "../components/dashboard/metrics/MetricsTab";
 import { ContentTab } from "../components/dashboard/content/ContentTab";
 import { InsightsTab } from "../components/dashboard/insights/InsightsTab";
 import { Toaster } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 
+/**
+ * Dashboard content component (wrapped in Suspense by parent)
+ * Handles all dashboard logic and state management
+ */
 function DashboardContent() {
 	const searchParams = useSearchParams();
 	const router = useRouter();
@@ -23,6 +51,7 @@ function DashboardContent() {
 	const [accounts, setAccounts] = useState<ConnectedAccount[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [showAddModal, setShowAddModal] = useState(false);
+	const [showSettingsModal, setShowSettingsModal] = useState(false);
 
 	// Get URL params
 	const urlTab = searchParams.get("tab") as TabType | null;
@@ -132,6 +161,39 @@ function DashboardContent() {
 		}
 	};
 
+	const handleRemoveAccount = async (accountId: string) => {
+		try {
+			await deleteAccount(accountId);
+			
+			// Remove from local state
+			const updatedAccounts = accounts.filter((a) => a.id !== accountId);
+			setAccounts(updatedAccounts);
+
+			// If the removed account was selected, select another
+			if (selectedAccountId === accountId) {
+				const newSelectedId = updatedAccounts.length > 0 ? updatedAccounts[0].id : null;
+				setSelectedAccountId(newSelectedId);
+				updateUrl(undefined, newSelectedId);
+			}
+
+			toast({
+				title: "Account removed",
+				description: "The account has been disconnected successfully.",
+			});
+		} catch (error) {
+			console.error("Failed to remove account:", error);
+			toast({
+				title: "Error",
+				description: "Failed to remove account. Please try again.",
+				variant: "destructive",
+			});
+		}
+	};
+
+	const handleSettings = () => {
+		setShowSettingsModal(true);
+	};
+
 	// Loading state
 	if (loading) {
 		return (
@@ -144,34 +206,21 @@ function DashboardContent() {
 		);
 	}
 
-	// No accounts - show empty state
-	if (accounts.length === 0) {
-		return (
-			<>
-				<EmptyState onAddAccount={() => setShowAddModal(true)} />
-				{showAddModal && (
-					<AddAccountModal
-						onClose={() => setShowAddModal(false)}
-						onSuccess={handleAddAccountSuccess}
-					/>
-				)}
-				<Toaster toasts={toasts} />
-			</>
-		);
-	}
-
-	// Render dashboard
+	// Render dashboard (even with no accounts)
 	const selectedAccount = accounts.find((a) => a.id === selectedAccountId);
 
 	return (
 		<>
 			<DashboardLayout
+				profileCard={<ProfileCard account={selectedAccount || null} />}
 				sidebar={
-					<AccountSwitcher
+					<Sidebar
 						accounts={accounts}
 						selectedAccountId={selectedAccountId}
 						onSelectAccount={handleAccountSelect}
 						onAddAccount={() => setShowAddModal(true)}
+						onRemoveAccount={handleRemoveAccount}
+						onSettings={handleSettings}
 					/>
 				}
 				tabs={
@@ -182,7 +231,21 @@ function DashboardContent() {
 					/>
 				}
 				content={
-					selectedAccountId ? (
+					accounts.length === 0 ? (
+						<div className="flex items-center justify-center h-full">
+							<div className="text-center space-y-4 max-w-md px-6">
+								<div className="mx-auto h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+									<Plus className="h-8 w-8 text-primary" />
+								</div>
+								<div className="space-y-2">
+									<h2 className="text-2xl font-semibold">Get Started with Weaver</h2>
+									<p className="text-muted-foreground">
+										Connect your first social media account using the "Add Account" button in the sidebar to start tracking analytics and insights.
+									</p>
+								</div>
+							</div>
+						</div>
+					) : selectedAccountId ? (
 						<>
 							{activeTab === "metrics" && (
 								<MetricsTab accountId={selectedAccountId} />
@@ -206,6 +269,12 @@ function DashboardContent() {
 				<AddAccountModal
 					onClose={() => setShowAddModal(false)}
 					onSuccess={handleAddAccountSuccess}
+				/>
+			)}
+
+			{showSettingsModal && (
+				<SettingsModal
+					onClose={() => setShowSettingsModal(false)}
 				/>
 			)}
 

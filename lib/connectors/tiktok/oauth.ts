@@ -1,3 +1,19 @@
+/**
+ * TikTok OAuth 2.0 with PKCE Implementation
+ * 
+ * This module handles the complete OAuth 2.0 authorization flow for TikTok,
+ * implementing PKCE (Proof Key for Code Exchange) for enhanced security.
+ * 
+ * Flow:
+ * 1. Generate PKCE challenge and verifier
+ * 2. Build authorization URL with challenge
+ * 3. User authorizes on TikTok
+ * 4. Exchange authorization code for access/refresh tokens using verifier
+ * 5. Refresh tokens when they expire
+ * 
+ * @see https://developers.tiktok.com/doc/login-kit-web
+ */
+
 import {
 	PKCEChallenge,
 	TikTokOAuthTokenResponse,
@@ -7,7 +23,13 @@ import {
 const TIKTOK_AUTH_URL = "https://www.tiktok.com/v2/auth/authorize/";
 const TIKTOK_TOKEN_URL = "https://open.tiktokapis.com/v2/oauth/token/";
 
-// Required scopes for TikTok integration
+/**
+ * Required OAuth scopes for TikTok integration
+ * - user.info.basic: Basic user information (open_id, union_id)
+ * - user.info.profile: Profile details (username, display name, avatar, bio)
+ * - user.info.stats: Account stats (followers, following, likes, video count)
+ * - video.list: List and query user's videos with metrics
+ */
 export const TIKTOK_SCOPES = [
 	"user.info.basic",
 	"user.info.profile",
@@ -16,7 +38,11 @@ export const TIKTOK_SCOPES = [
 ];
 
 /**
- * Generate a random string for code verifier
+ * Generate a cryptographically secure random string
+ * Used for PKCE code verifier and OAuth state parameter
+ * 
+ * @param length - Length of the string to generate
+ * @returns Random string using unreserved characters per RFC 7636
  */
 function generateRandomString(length: number): string {
 	const charset =
@@ -29,7 +55,11 @@ function generateRandomString(length: number): string {
 }
 
 /**
- * Generate SHA256 hash
+ * Generate SHA-256 hash of a string
+ * Used to create PKCE code challenge from code verifier
+ * 
+ * @param plain - The plain text string to hash
+ * @returns SHA-256 hash as ArrayBuffer
  */
 async function sha256(plain: string): Promise<ArrayBuffer> {
 	const encoder = new TextEncoder();
@@ -38,7 +68,11 @@ async function sha256(plain: string): Promise<ArrayBuffer> {
 }
 
 /**
- * Base64 URL encode
+ * Base64 URL-safe encoding (RFC 4648 §5)
+ * Converts ArrayBuffer to base64 and replaces URL-unsafe characters
+ * 
+ * @param buffer - The ArrayBuffer to encode
+ * @returns Base64 URL-safe encoded string (no +, /, or = characters)
  */
 function base64UrlEncode(buffer: ArrayBuffer): string {
 	const bytes = new Uint8Array(buffer);
@@ -53,7 +87,16 @@ function base64UrlEncode(buffer: ArrayBuffer): string {
 }
 
 /**
- * Generate PKCE challenge and verifier
+ * Generate PKCE (Proof Key for Code Exchange) challenge and verifier
+ * 
+ * PKCE prevents authorization code interception attacks by:
+ * 1. Client generates a random code_verifier
+ * 2. Client creates code_challenge = SHA256(code_verifier)
+ * 3. Client sends code_challenge with auth request
+ * 4. Client sends code_verifier with token request
+ * 5. Server verifies SHA256(code_verifier) === code_challenge
+ * 
+ * @returns Object containing code_verifier (store securely) and code_challenge (send to TikTok)
  */
 export async function generatePKCE(): Promise<PKCEChallenge> {
 	const code_verifier = generateRandomString(128);
@@ -67,14 +110,32 @@ export async function generatePKCE(): Promise<PKCEChallenge> {
 }
 
 /**
- * Generate random state for CSRF protection
+ * Generate random state parameter for CSRF protection
+ * 
+ * The state parameter prevents CSRF attacks by:
+ * 1. Client generates random state before redirect
+ * 2. Client stores state in session/cookie
+ * 3. TikTok returns state in callback
+ * 4. Client verifies returned state matches stored state
+ * 
+ * @returns Random 32-character state string
  */
 export function generateState(): string {
 	return generateRandomString(32);
 }
 
 /**
- * Build TikTok authorization URL
+ * Build TikTok OAuth authorization URL
+ * 
+ * Constructs the URL to redirect users to TikTok for authorization.
+ * User will be prompted to allow Weaver to access their TikTok account.
+ * 
+ * @param clientKey - TikTok app client key from developer portal
+ * @param redirectUri - Where TikTok redirects after authorization (must match portal config)
+ * @param state - Random state for CSRF protection
+ * @param codeChallenge - PKCE code challenge (SHA256 of code verifier)
+ * @param scopes - Array of permission scopes to request
+ * @returns Full authorization URL to redirect user to
  */
 export function getAuthorizationUrl(
 	clientKey: string,
@@ -97,7 +158,21 @@ export function getAuthorizationUrl(
 }
 
 /**
- * Exchange authorization code for access token
+ * Exchange authorization code for access and refresh tokens
+ * 
+ * Called after user authorizes and TikTok redirects back with a code.
+ * Exchanges the one-time authorization code for:
+ * - access_token: Used for API requests (expires in 24 hours)
+ * - refresh_token: Used to get new access tokens (long-lived)
+ * - open_id: TikTok's unique identifier for the user
+ * 
+ * @param code - Authorization code from TikTok callback
+ * @param codeVerifier - PKCE code verifier (matches the challenge sent earlier)
+ * @param clientKey - TikTok app client key
+ * @param clientSecret - TikTok app client secret
+ * @param redirectUri - Same redirect URI used in authorization (for validation)
+ * @returns Token response with access_token, refresh_token, expires_in, open_id, and scopes
+ * @throws Error if token exchange fails or parameters are invalid
  */
 export async function exchangeCodeForToken(
 	code: string,
@@ -138,7 +213,19 @@ export async function exchangeCodeForToken(
 }
 
 /**
- * Refresh access token using refresh token
+ * Refresh an expired access token using a refresh token
+ * 
+ * TikTok access tokens expire after 24 hours. Use this function to get a new
+ * access token without requiring the user to re-authorize.
+ * 
+ * Note: Each refresh invalidates the old access token and may issue a new refresh token.
+ * Always update both tokens in your database after refreshing.
+ * 
+ * @param refreshToken - The refresh token from previous OAuth flow or refresh
+ * @param clientKey - TikTok app client key
+ * @param clientSecret - TikTok app client secret
+ * @returns New token response with fresh access_token and possibly new refresh_token
+ * @throws Error if refresh fails (token expired, revoked, or invalid)
  */
 export async function refreshAccessToken(
 	refreshToken: string,
@@ -169,7 +256,17 @@ export async function refreshAccessToken(
 }
 
 /**
- * Revoke access token
+ * Revoke an access token (disconnect account)
+ * 
+ * Call this when a user wants to disconnect their TikTok account from Weaver.
+ * Immediately invalidates the access token, preventing further API access.
+ * 
+ * Best practice: Revoke the token before deleting it from your database.
+ * 
+ * @param accessToken - The access token to revoke
+ * @param clientKey - TikTok app client key
+ * @param clientSecret - TikTok app client secret
+ * @throws Error if revocation fails
  */
 export async function revokeToken(
 	accessToken: string,

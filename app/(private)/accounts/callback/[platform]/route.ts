@@ -1,8 +1,43 @@
+/**
+ * OAuth Callback Route Handler
+ * 
+ * Handles OAuth callbacks after users authorize Weaver to access their social media accounts.
+ * 
+ * Flow:
+ * 1. User clicks "Connect Account" -> Redirected to platform (e.g., TikTok)
+ * 2. User authorizes Weaver
+ * 3. Platform redirects here with authorization code
+ * 4. Exchange code for access/refresh tokens (PKCE verification)
+ * 5. Fetch user profile info from platform
+ * 6. Store or update account in Supabase
+ * 7. Redirect to dashboard or send message to popup opener
+ * 
+ * Security:
+ * - Validates OAuth state parameter (CSRF protection)
+ * - Retrieves code_verifier from secure HTTP-only cookie
+ * - Cleans up cookies after use
+ * - All tokens stored server-side only
+ * 
+ * Supported platforms: tiktok (more platforms coming soon)
+ */
+
 import { createClient } from "@/lib/supabase/server";
 import { exchangeCodeForToken } from "@/lib/connectors/tiktok/oauth";
 import { getUserInfo } from "@/lib/connectors/tiktok/client";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * Handle OAuth callback GET request
+ * 
+ * Query parameters:
+ * - code: Authorization code from OAuth provider
+ * - state: CSRF protection token (must match cookie)
+ * - error: Error message if authorization was denied
+ * 
+ * @param request - Next.js request object
+ * @param params - Route parameters with platform name
+ * @returns HTML with postMessage to close popup, or redirect to dashboard
+ */
 export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ platform: string }> }

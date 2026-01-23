@@ -31,11 +31,11 @@ export function Header() {
 		},
 		{
 			label: 'Roadmap',
-			href: '#',
+			href: '#roadmap',
 		},
 		{
 			label: 'The Team',
-			href: '#',
+			href: '#team',
 		},
 	];
 

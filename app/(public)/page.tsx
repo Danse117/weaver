@@ -5,6 +5,8 @@ import { UnsureSection } from './components/home/Unsure';
 import { TeamsSection } from './components/home/Teams';
 import { WaitlistSection } from './components/home/Waitlist';
 import { AnimatedBackground } from './components/home/AnimatedBackground';
+import { Roadmap } from './components/home/Roadmap';
+import { TeamSectionDemo } from './components/home/MeetTheTeam';
 
 export default function Home() {
 	return (
@@ -13,6 +15,8 @@ export default function Home() {
 			<Hero />
 			<Features />
       		<TeamsSection />
+			<TeamSectionDemo />
+      		<Roadmap />
       		<WaitlistSection />
       		<UnsureSection />
       		<FaqsSection />
