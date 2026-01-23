@@ -24,7 +24,7 @@ interface TabBarProps {
 export function TabBar({ activeTab, onTabChange, disabled }: TabBarProps) {
 	return (
 		<div className="px-6 py-3">
-			<Tabs value={activeTab} onValueChange={onTabChange} className="text-sm text-muted-foreground">
+			<Tabs value={activeTab} onValueChange={(value) => onTabChange(value as TabType)} className="text-sm text-muted-foreground">
 				<TabsList size="lg">
 					<TabsTrigger value="metrics" disabled={disabled}>
 						<BarChart3 /> Metrics
