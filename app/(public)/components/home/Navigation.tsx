@@ -58,7 +58,7 @@ export function Header() {
 		
 		<header
 			className={cn(
-				'sticky top-0 z-50 mx-auto w-full max-w-5xl border-b border-transparent md:rounded-md md:border md:transition-all md:ease-out',
+				'sticky top-0  z-50 mx-auto w-full max-w-5xl border-b border-transparent md:rounded-md md:border md:transition-all md:ease-out',
 				{
 					'bg-background/95 supports-backdrop-filter:bg-background/50 border-border backdrop-blur-lg md:top-4 md:max-w-4xl md:shadow':
 						scrolled && !open,
@@ -89,14 +89,14 @@ export function Header() {
 					)}
 				</Link>
 				<div className="hidden items-center gap-2 md:flex">
-					{links.map((link, i) => (
-						<a key={i} className={buttonVariants({ variant: 'ghost' })} href={link.href}>
-							{link.label}
-						</a>
-					))}
-					<Link href="/login" className={buttonVariants({ variant: 'ghost' })}>
-						Login
-					</Link>
+				{links.map((link, i) => (
+					<a key={i} className={cn(buttonVariants({ variant: 'ghost' }), 'font-bold')} href={link.href}>
+						{link.label}
+					</a>
+				))}
+				<Link href="/login" className={cn(buttonVariants({ variant: 'ghost' }), 'font-bold')}>
+					Login
+				</Link>
 					<ThemeToggle />
 					<RainbowButton href="#waitlist" className="w-full">Join Waitlist</RainbowButton>
 				</div>
@@ -121,29 +121,29 @@ export function Header() {
 						'flex h-full w-full flex-col justify-between gap-y-2 p-4',
 					)}
 				>
-					<div className="grid gap-y-2">
-						{links.map((link) => (
-							<a
-								key={link.label}
-								className={buttonVariants({
-									variant: 'ghost',
-									className: 'justify-start',
-								})}
-								href={link.href}
-							>
-								{link.label}
-							</a>
-						))}
-						<Link
-							href="/login"
+				<div className="grid gap-y-2">
+					{links.map((link) => (
+						<a
+							key={link.label}
 							className={buttonVariants({
 								variant: 'ghost',
-								className: 'justify-start',
+								className: 'justify-start font-bold',
 							})}
+							href={link.href}
 						>
-							Login
-						</Link>
-					</div>
+							{link.label}
+						</a>
+					))}
+					<Link
+						href="/login"
+						className={buttonVariants({
+							variant: 'ghost',
+							className: 'justify-start font-bold',
+						})}
+					>
+						Login
+					</Link>
+				</div>
 					<div className="flex flex-col gap-2">
 						<RainbowButton href="#waitlist" className="w-full">Join Waitlist</RainbowButton>
 					</div>

@@ -37,20 +37,22 @@ function MainContentWrapper({
 	return (
 		<main
 			className={cn(
-				"flex-1 transition-all duration-300 min-h-screen",
+				"flex-1 flex flex-col transition-all duration-300 h-screen overflow-hidden w-full",
 				isCollapsed ? "ml-[70px]" : "ml-64"
 			)}
 		>
-			{/* User Profile Account card */}
-			{profileCard}
+			{/* User Profile Account card - fixed */}
+			<div className="shrink-0 w-full">
+				{profileCard}
+			</div>
 
-			{/* Tab bar */}
-			<div className="border-b border-border bg-background">
+			{/* Tab bar - fixed */}
+			<div className="shrink-0 border-b border-border bg-background w-full">
 				{tabs}
 			</div>
 
-			{/* Content */}
-			<div className="flex-1 overflow-auto">
+			{/* Content - scrollable, full width */}
+			<div className="flex-1 overflow-y-auto overflow-x-hidden w-full">
 				{content}
 			</div>
 		</main>

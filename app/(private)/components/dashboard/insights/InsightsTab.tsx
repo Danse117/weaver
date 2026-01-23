@@ -9,10 +9,10 @@ interface InsightsTabProps {
 
 export function InsightsTab({ accountId }: InsightsTabProps) {
 	return (
-		<div className="p-6 space-y-6">
+		<div className="p-4 sm:p-6 lg:p-8 space-y-6 w-full">
 			<div>
-				<h2 className="text-2xl font-bold tracking-tight">AI Insights</h2>
-				<p className="text-muted-foreground">
+				<h2 className="text-xl sm:text-2xl font-bold tracking-tight">AI Insights</h2>
+				<p className="text-sm text-muted-foreground">
 					Personalized recommendations to grow your account
 				</p>
 			</div>
@@ -25,7 +25,7 @@ export function InsightsTab({ accountId }: InsightsTabProps) {
 						</div>
 						<CardTitle>AI Insights Coming Soon</CardTitle>
 						<CardDescription>
-							We're building intelligent insights to help you understand your
+							We&apos;re building intelligent insights to help you understand your
 							audience and optimize your content strategy.
 						</CardDescription>
 					</CardHeader>

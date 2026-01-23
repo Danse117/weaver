@@ -7,13 +7,15 @@
  * - Single-page app experience (no full page reloads when switching tabs/accounts)
  * - URL persistence using query parameters (?tab=metrics&account=xyz)
  * - Sidebar for account switching and adding new accounts
- * - Tab navigation (Metrics, Content, Insights)
+ * - Tab navigation (Metrics, Content, Insights, Advertising, Trends)
  * - Empty state for new users with no connected accounts
  * - Account removal functionality
  * 
  * URL Parameters:
- * - tab: Active tab (metrics, content, insights) - defaults to metrics
+ * - tab: Active tab (metrics, content, insights, advertising, trends) - defaults to metrics
  * - account: Selected account ID - defaults to first account
+ * 
+ * Note: The Trends tab doesn't require an account - it shows global trending data
  * 
  * State Management:
  * - Connected accounts fetched on mount
@@ -35,9 +37,12 @@ import { SettingsModal } from "../components/dashboard/SettingsModal";
 import { MetricsTab } from "../components/dashboard/metrics/MetricsTab";
 import { ContentTab } from "../components/dashboard/content/ContentTab";
 import { InsightsTab } from "../components/dashboard/insights/InsightsTab";
+import { AdvertisingTab } from "../components/dashboard/advertising/AdvertisingTab";
+import { TrendsTab } from "../components/dashboard/trends/TrendsTab";
 import { Toaster } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Plus } from "lucide-react";
+import { WeaverLoaderWithText, WeaverLoader } from "@/components/ui/loader";
+import { Plus } from "lucide-react";
 
 /**
  * Dashboard content component (wrapped in Suspense by parent)
@@ -198,10 +203,7 @@ function DashboardContent() {
 	if (loading) {
 		return (
 			<div className="flex items-center justify-center h-screen">
-				<div className="flex flex-col items-center gap-2">
-					<Loader2 className="h-8 w-8 animate-spin text-primary" />
-					<p className="text-sm text-muted-foreground">Loading dashboard...</p>
-				</div>
+				<WeaverLoaderWithText size={64} text="Loading dashboard..." />
 			</div>
 		);
 	}
@@ -245,6 +247,9 @@ function DashboardContent() {
 								</div>
 							</div>
 						</div>
+					) : activeTab === "trends" ? (
+						// Trends tab doesn't require account - shows global data
+						<TrendsTab />
 					) : selectedAccountId ? (
 						<>
 							{activeTab === "metrics" && (
@@ -255,6 +260,12 @@ function DashboardContent() {
 							)}
 							{activeTab === "insights" && (
 								<InsightsTab accountId={selectedAccountId} />
+							)}
+							{activeTab === "advertising" && selectedAccount && (
+								<AdvertisingTab 
+									accountId={selectedAccountId} 
+									platform={selectedAccount.platform} 
+								/>
 							)}
 						</>
 					) : (
@@ -288,7 +299,7 @@ export default function DashboardPage() {
 		<Suspense
 			fallback={
 				<div className="flex items-center justify-center h-screen">
-					<Loader2 className="h-8 w-8 animate-spin text-primary" />
+					<WeaverLoader size={64} animation="pulse" />
 				</div>
 			}
 		>

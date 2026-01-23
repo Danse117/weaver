@@ -54,7 +54,7 @@ export function UnsureSection() {
 					</h2>
 				</FadeIn>
 				<FadeIn direction="up" delay={0.15}>
-					<p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+					<p className="mx-auto mt-6 font-bold max-w-2xl text-lg text-primary">
 						Let ChatGPT, Claude, or Perplexity do the thinking for you. Click a
 						button and see what your favourite AI says about {productName}
 					</p>

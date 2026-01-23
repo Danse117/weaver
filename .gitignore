@@ -45,3 +45,5 @@ next-env.d.ts
 test_prompts/
 
 schema/
+
+docs/

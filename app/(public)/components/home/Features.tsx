@@ -131,7 +131,7 @@ export function Features() {
 					</p>
 				</FadeIn>
 				<div className="relative">
-					<StaggerContainer className="relative z-10 grid grid-cols-6 gap-4" staggerDelay={0.1}>
+					<StaggerContainer className="relative  z-10 grid grid-cols-6 gap-4" staggerDelay={0.1}>
 					{/* Card 1 - Multi-Platform Connections */}
 					<StaggerItem index={0} className="col-span-full lg:col-span-2">
 					<Card className="relative flex overflow-hidden h-full">
@@ -153,8 +153,10 @@ export function Features() {
 								
 								{/* X (Twitter) */}
 								<div className="h-10 w-10 rounded-full bg-black dark:bg-white flex items-center justify-center">
-									<TwitterLogoIcon className="h-5 w-5 text-white dark:text-black" />
-								</div>
+                                <svg className="h-5 w-5 text-white" viewBox="0 0 32 32" fill="currentColor">
+			                            <path d="M18.42,14.009L27.891,3h-2.244l-8.224,9.559L10.855,3H3.28l9.932,14.455L3.28,29h2.244l8.684-10.095,6.936,10.095h7.576l-10.301-14.991h0Zm-3.074,3.573l-1.006-1.439L6.333,4.69h3.447l6.462,9.243,1.006,1.439,8.4,12.015h-3.447l-6.854-9.804h0Z"></path>
+		                            </svg>								
+                                </div>
 								
 								{/* LinkedIn */}
 								<div className="h-10 w-10 rounded-full bg-[#0077B5] flex items-center justify-center">
@@ -213,7 +215,7 @@ export function Features() {
 								
 							{/* Kick */}
 							<div className="h-10 w-10 rounded-full bg-[#53FC18] flex items-center justify-center">
-								<svg className="h-5 w-5" viewBox="0 0 32 32" fill="currentColor">
+								<svg className='h-5 w-5' viewBox="0 0 32 32" fill="currentColor">
 									<path fill="currentColor" fillRule="evenodd" d="M5 1C2.79086 1 1 2.79086 1 5v14c0 2.2091 1.79086 4 4 4h14c2.2091 0 4 -1.7909 4 -4V5c0 -2.20914 -1.7909 -4 -4 -4H5Zm5.3696 3.5H5.47827v15h4.89133v-3.2609H12v1.6305h1.6304V19.5h4.8913v-4.8913h-1.6304v-1.6304h-1.6304v-1.9566h1.6304V9.3913h1.6304V4.5h-4.8913v1.63043H12v1.63044h-1.6304V4.5Z" strokeWidth="1"></path>
 								</svg>
 							</div>

@@ -1,12 +1,28 @@
+/**
+ * Content Tab Router Component
+ * 
+ * Determines which platform-specific content tab to render based on the connected account.
+ * This is the component imported by the main dashboard page.
+ * 
+ * Flow:
+ * 1. Receives accountId from dashboard
+ * 2. Fetches account details to determine platform
+ * 3. Renders appropriate platform-specific content component
+ * 
+ * Supported platforms:
+ * - TikTok: TikTokContentTab (videos)
+ * - Instagram: Coming soon (posts, reels, stories)
+ * - YouTube: Coming soon (videos, shorts)
+ * - etc.
+ */
+
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchTikTokVideos } from "@/app/actions/tiktok";
-import { TikTokVideo } from "@/lib/connectors/tiktok/types";
-import { VideoGrid } from "./VideoGrid";
-import { Button } from "@/components/ui/button";
+import { getConnectedAccounts, ConnectedAccount } from "@/app/actions/accounts";
+import { TikTokContentTab } from "./tiktok/TikTokContentTab";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { WeaverLoader } from "@/components/ui/loader";
 
 interface ContentTabProps {
 	accountId: string;
@@ -14,83 +30,42 @@ interface ContentTabProps {
 
 export function ContentTab({ accountId }: ContentTabProps) {
 	const [loading, setLoading] = useState(true);
-	const [loadingMore, setLoadingMore] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [videos, setVideos] = useState<TikTokVideo[]>([]);
-	const [cursor, setCursor] = useState<number | undefined>(undefined);
-	const [hasMore, setHasMore] = useState(false);
+	const [account, setAccount] = useState<ConnectedAccount | null>(null);
 
 	useEffect(() => {
-		async function loadVideos() {
-			setLoading(true);
-			setError(null);
+		async function loadAccount() {
 			try {
-				const result = await fetchTikTokVideos(accountId);
-				setVideos(result.videos);
-				setCursor(result.cursor);
-				setHasMore(result.hasMore);
+				const accounts = await getConnectedAccounts();
+				const foundAccount = accounts.find((a) => a.id === accountId);
+				setAccount(foundAccount || null);
 			} catch (err) {
-				setError(err instanceof Error ? err.message : "Failed to load videos");
+				console.error("Failed to load account:", err);
 			} finally {
 				setLoading(false);
 			}
 		}
 
-		loadVideos();
+		loadAccount();
 	}, [accountId]);
-
-	const loadMoreVideos = async () => {
-		if (!hasMore || loadingMore) return;
-
-		setLoadingMore(true);
-		try {
-			const result = await fetchTikTokVideos(accountId, cursor);
-			setVideos([...videos, ...result.videos]);
-			setCursor(result.cursor);
-			setHasMore(result.hasMore);
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Failed to load more videos");
-		} finally {
-			setLoadingMore(false);
-		}
-	};
 
 	if (loading) {
 		return (
 			<div className="flex items-center justify-center h-full">
-				<div className="flex flex-col items-center gap-2">
-					<Loader2 className="h-8 w-8 animate-spin text-primary" />
-					<p className="text-sm text-muted-foreground">Loading videos...</p>
-				</div>
+				<WeaverLoader size={48} />
 			</div>
 		);
 	}
 
-	if (error && videos.length === 0) {
+	if (!account) {
 		return (
 			<div className="flex items-center justify-center h-full p-6">
 				<Card className="max-w-md w-full">
 					<CardHeader>
-						<CardTitle className="text-destructive">Error Loading Videos</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<p className="text-sm text-muted-foreground">{error}</p>
-					</CardContent>
-				</Card>
-			</div>
-		);
-	}
-
-	if (videos.length === 0) {
-		return (
-			<div className="flex items-center justify-center h-full p-6">
-				<Card className="max-w-md w-full">
-					<CardHeader>
-						<CardTitle>No Videos Found</CardTitle>
+						<CardTitle className="text-destructive">Account Not Found</CardTitle>
 					</CardHeader>
 					<CardContent>
 						<p className="text-sm text-muted-foreground">
-							This account doesn't have any public videos yet.
+							The selected account could not be found.
 						</p>
 					</CardContent>
 				</Card>
@@ -98,39 +73,62 @@ export function ContentTab({ accountId }: ContentTabProps) {
 		);
 	}
 
+	// Route to platform-specific component
+	switch (account.platform) {
+		case "tiktok":
+			return <TikTokContentTab accountId={accountId} />;
+		
+		// Future platforms
+		case "instagram":
+			return <PlatformComingSoon platform="Instagram" type="posts, reels, and stories" />;
+		case "youtube":
+			return <PlatformComingSoon platform="YouTube" type="videos and shorts" />;
+		case "facebook":
+			return <PlatformComingSoon platform="Facebook" type="posts and videos" />;
+		case "twitter":
+		case "x":
+			return <PlatformComingSoon platform="X (Twitter)" type="tweets" />;
+		
+		default:
+			return <PlatformNotSupported platform={account.platform} />;
+	}
+}
+
+// Placeholder for platforms not yet implemented
+function PlatformComingSoon({ platform, type }: { platform: string; type: string }) {
 	return (
-		<div className="p-6 space-y-6">
-			<div>
-				<h2 className="text-2xl font-bold tracking-tight">Content Library</h2>
-				<p className="text-muted-foreground">
-					Browse and analyze your TikTok videos
-				</p>
-			</div>
+		<div className="flex items-center justify-center h-full p-6">
+			<Card className="max-w-md w-full">
+				<CardHeader>
+					<CardTitle>{platform} Content</CardTitle>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<p className="text-sm text-muted-foreground">
+						{platform} content library is coming soon!
+					</p>
+					<p className="text-xs text-muted-foreground">
+						We're working on adding support for browsing and analyzing your {type}. Stay tuned!
+					</p>
+				</CardContent>
+			</Card>
+		</div>
+	);
+}
 
-			<VideoGrid videos={videos} />
-
-			{hasMore && (
-				<div className="flex justify-center pt-4">
-					<Button
-						onClick={loadMoreVideos}
-						disabled={loadingMore}
-						variant="outline"
-					>
-						{loadingMore ? (
-							<>
-								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								Loading...
-							</>
-						) : (
-							"Load More"
-						)}
-					</Button>
-				</div>
-			)}
-
-			{error && (
-				<p className="text-sm text-destructive text-center">{error}</p>
-			)}
+// Error state for unsupported platforms
+function PlatformNotSupported({ platform }: { platform: string }) {
+	return (
+		<div className="flex items-center justify-center h-full p-6">
+			<Card className="max-w-md w-full">
+				<CardHeader>
+					<CardTitle className="text-destructive">Platform Not Supported</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<p className="text-sm text-muted-foreground">
+						The platform "{platform}" is not currently supported for content management.
+					</p>
+				</CardContent>
+			</Card>
 		</div>
 	);
 }

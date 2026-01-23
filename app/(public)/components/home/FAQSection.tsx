@@ -15,7 +15,7 @@ export function FaqsSection() {
 			<FadeIn direction="up">
 				<div className="space-y-2">
 					<h2 className="text-3xl font-bold md:text-4xl">Frequently Asked Questions</h2>
-					<p className="text-muted-foreground max-w-2xl">
+					<p className="text-muted-foreground max-w-2xl font-bold">
 						Here are some common questions and answers that you might encounter when using Efferd. If
 						you don't find the answer you're looking for, feel free to reach out.
 					</p>
@@ -45,7 +45,7 @@ export function FaqsSection() {
 				</Accordion>
 			</FadeIn>
 			<FadeIn direction="up" delay={0.25}>
-				<p className="text-muted-foreground">
+				<p className="text-muted-foreground font-bold">
 					Can't find what you're looking for? Contact our{' '}
 					<a href="#" className="text-primary hover:underline">
 						customer support team

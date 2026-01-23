@@ -1,10 +1,23 @@
+/**
+ * TikTok Profile Stats Component
+ * 
+ * Displays key TikTok account metrics in a grid of stat cards:
+ * - Followers
+ * - Following
+ * - Total Likes (account-level, not per video)
+ * - Total Videos
+ * 
+ * These are TikTok-specific metrics from the user.info.stats API scope.
+ */
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TikTokUser } from "@/lib/connectors/tiktok/types";
 import { Users, UserPlus, Heart, Video } from "lucide-react";
+import { formatNumber } from "../shared/formatNumber";
 
-interface ProfileStatsProps {
+interface TikTokProfileStatsProps {
 	user: TikTokUser;
 	stats: {
 		followers: number;
@@ -14,17 +27,7 @@ interface ProfileStatsProps {
 	};
 }
 
-function formatNumber(num: number): string {
-	if (num >= 1000000) {
-		return (num / 1000000).toFixed(1) + "M";
-	}
-	if (num >= 1000) {
-		return (num / 1000).toFixed(1) + "K";
-	}
-	return num.toString();
-}
-
-export function ProfileStats({ user, stats }: ProfileStatsProps) {
+export function TikTokProfileStats({ user, stats }: TikTokProfileStatsProps) {
 	const statCards = [
 		{
 			title: "Followers",
