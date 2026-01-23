@@ -61,7 +61,7 @@ export const metadata: Metadata = {
       "Unified social media analytics platform for content creators and marketers. Track performance across Instagram, TikTok, YouTube, Twitter, and more with actionable insights.",
     images: [
       {
-        url: "/assets/logos/weaver_logo_upscaled.png",
+        url: "/assets/logos/weaver_logo_light.png",
         width: 1200,
         height: 630,
         alt: "Weaver - Social Media Analytics Platform",
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     title: "Weaver - Social Media Analytics & Management for Content Creators",
     description:
       "Unified social media analytics platform for content creators and marketers. Track performance across Instagram, TikTok, YouTube, Twitter, and more.",
-    images: ["/assets/logos/weaver_logo_upscaled.png"],
+    images: ["/assets/logos/weaver_logo_light.png"],
   },
   alternates: {
     canonical: "https://weavertek.com",
@@ -126,7 +126,7 @@ export default function RootLayout({
         url: "https://weavertek.com",
         logo: {
           "@type": "ImageObject",
-          url: "https://weavertek.com/assets/logos/weaver_logo_upscaled.png",
+          url: "https://weavertek.com/assets/logos/weaver_logo_light.png",
           width: 512,
           height: 512,
         },
