@@ -11,7 +11,7 @@ import { TeamSectionDemo } from './components/home/MeetTheTeam';
 export default function Home() {
 	return (
 		<>
-			<AnimatedBackground />
+			{/* <AnimatedBackground /> */}
 			<Hero />
 			<Features />
       		<TeamsSection />
