@@ -17,7 +17,7 @@ const teamMembers = [
     imageSrc:
       "/assets/team/a.png",
     socialLinks: [
-      { icon: Linkedin, href: "#" },
+      { icon: Linkedin, href: "https://www.linkedin.com/in/adam-el-sayad/" },
     ],
   },
   {
@@ -26,7 +26,7 @@ const teamMembers = [
     imageSrc:
       "/assets/team/d.png",
     socialLinks: [
-      { icon: Linkedin, href: "#" },
+      { icon: Linkedin, href: "https://www.linkedin.com/in/daoud-farraj/" },
     ],
   },
 ];
